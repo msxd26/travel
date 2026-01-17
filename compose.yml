@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:15.2
+    container_name: best_travel
+    restart: always
+    volumes:
+      - ./sql/create_schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
+      - ./sql/data.sql:/docker-entrypoint-initdb.d/data.sql
+    environment:
+      - POSTGRES_DB=best_travel
+      - POSTGRES_USER=jsaire
+      - POSTGRES_PASSWORD=test123
+    ports:
+      - "5432:5432"
