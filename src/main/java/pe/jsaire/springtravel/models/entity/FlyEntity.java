@@ -1,5 +1,6 @@
 package pe.jsaire.springtravel.models.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -59,6 +60,8 @@ public class FlyEntity {
     private BigDecimal price;
 
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "fly", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL,
+            mappedBy = "fly",
+            fetch = FetchType.LAZY)
     private Set<TicketEntity> tickets;
 }

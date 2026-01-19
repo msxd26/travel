@@ -23,6 +23,7 @@ import pe.jsaire.springtravel.utils.exceptions.ResourceNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 
@@ -35,6 +36,7 @@ public class TourServiceImpl implements ITourService {
     private final TourMapper tourMapper;
     private final FlyRepository flyRepository;
     private final HotelRepository hotelRepository;
+    private final EmailService emailService;
 
     @Override
     @Transactional(readOnly = true)
@@ -62,6 +64,10 @@ public class TourServiceImpl implements ITourService {
             tour.addReservation(createReservation(hotel, customer, hotelReq.getTotalDays()));
         });
         TourEntity savedTour = tourRepository.save(tour);
+
+        if (Objects.nonNull(tourRequest.getEmail())) {
+            emailService.sendEmail(tourRequest.getEmail(), customer.getFullName(), "tour");
+        }
         return tourMapper.toResponse(savedTour);
     }
 
@@ -132,7 +138,7 @@ public class TourServiceImpl implements ITourService {
     }
 
     private ReservationEntity createReservation(HotelEntity hotel, CustomerEntity customer, Integer totalDays) {
-        var price = hotel.getPrice().multiply(BigDecimal.valueOf(1.10)); // +10%
+        var price = hotel.getPrice().multiply(BigDecimal.valueOf(1.10));
         return ReservationEntity.builder()
                 .hotel(hotel)
                 .customer(customer)

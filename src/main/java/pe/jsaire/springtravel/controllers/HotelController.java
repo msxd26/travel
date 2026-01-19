@@ -51,4 +51,5 @@ public class HotelController {
     public ResponseEntity<Set<HotelResponse>> getByRating(@RequestParam Integer rating) {
         return ResponseEntity.ok(service.readByRating(rating));
     }
+    
 }

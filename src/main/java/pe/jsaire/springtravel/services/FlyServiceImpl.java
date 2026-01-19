@@ -1,6 +1,7 @@
 package pe.jsaire.springtravel.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -11,6 +12,7 @@ import pe.jsaire.springtravel.mappers.FlyMapper;
 import pe.jsaire.springtravel.models.dto.response.FlyResponse;
 import pe.jsaire.springtravel.repositories.FlyRepository;
 import pe.jsaire.springtravel.services.abstract_service.IFlyService;
+import pe.jsaire.springtravel.utils.CacheConstants;
 import pe.jsaire.springtravel.utils.enums.SortType;
 
 import java.math.BigDecimal;
@@ -38,16 +40,19 @@ public class FlyServiceImpl implements IFlyService {
     }
 
     @Override
+    @Cacheable(value = CacheConstants.FLY_CACHE_NAME)
     public Set<FlyResponse> readLessPrice(BigDecimal price) {
         return mapper.toSetResponse(repository.findByPriceLessThan(price));
     }
 
     @Override
+    @Cacheable(value = CacheConstants.FLY_CACHE_NAME)
     public Set<FlyResponse> readBetweenPrices(BigDecimal min, BigDecimal max) {
         return mapper.toSetResponse(repository.findByPriceBetween(min, max));
     }
 
     @Override
+    @Cacheable(value = CacheConstants.FLY_CACHE_NAME)
     public Set<FlyResponse> readByOriginDistination(String origin, String destination) {
         return mapper.toSetResponse(repository.findByOriginNameAndDestinyName(origin, destination));
     }

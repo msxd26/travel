@@ -18,6 +18,7 @@ import pe.jsaire.springtravel.utils.exceptions.ResourceNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Currency;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -29,6 +30,7 @@ public class TicketServiceimpl implements ITicketService {
     private final FlyRepository flyRepository;
     private final CustomerRepository customerRepository;
     private final CurrencyServiceApi currencyServiceApi;
+    private final EmailService emailService;
 
     public static final BigDecimal CHARGES_PORCENTAGE = BigDecimal.valueOf(0.20);
 
@@ -54,7 +56,12 @@ public class TicketServiceimpl implements ITicketService {
                 .purchaseDate(LocalDate.now())
                 .price(BigDecimal.valueOf(10))
                 .build();
+
+        if (Objects.nonNull(ticketRequest.getEmail())) {
+            emailService.sendEmail(ticketRequest.getEmail(), customer.getFullName(), "ticket");
+        }
         return mapper.toResponse(repository.save(ticketSave));
+
     }
 
     @Override

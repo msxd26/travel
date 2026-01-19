@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Currency;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -30,6 +31,7 @@ public class ReservationServiceImpl implements IReservationService {
     private final HotelRepository hotelRepository;
     private final CustomerRepository customerRepository;
     private final CurrencyServiceApi currencyServiceApi;
+    private final EmailService emailService;
 
     public static final BigDecimal CHARGES_PORCENTAGE = BigDecimal.valueOf(0.20);
 
@@ -57,6 +59,10 @@ public class ReservationServiceImpl implements IReservationService {
                 .dateEnd(LocalDate.now().plusDays(request.getTotalDays()))
                 .price(hotel.getPrice().add(hotel.getPrice().multiply(new BigDecimal(10))))
                 .build();
+
+        if (Objects.nonNull(request.getEmail())) {
+            emailService.sendEmail(request.getEmail(), customer.getFullName(), "reservation");
+        }
         return mapper.toResponse(repository.save(reservaUpdate));
     }
 

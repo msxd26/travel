@@ -1,5 +1,6 @@
 package pe.jsaire.springtravel.models.dto.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -34,5 +35,8 @@ public class ReservationRequest implements Serializable {
     @Max(value = 30, message = "Max 30 days to make reservation")
     @NotNull(message = "total days is mandatory")
     private Integer totalDays;
+
+    @Email(message = "Invalid Email")
+    private String email;
 
 }

@@ -1,6 +1,7 @@
 package pe.jsaire.springtravel.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -10,6 +11,7 @@ import pe.jsaire.springtravel.mappers.HotelMapper;
 import pe.jsaire.springtravel.models.dto.response.HotelResponse;
 import pe.jsaire.springtravel.repositories.HotelRepository;
 import pe.jsaire.springtravel.services.abstract_service.IHotelService;
+import pe.jsaire.springtravel.utils.CacheConstants;
 import pe.jsaire.springtravel.utils.enums.SortType;
 
 import java.math.BigDecimal;
@@ -38,18 +40,35 @@ public class HotelServiceImpl implements IHotelService {
     }
 
     @Override
+    @Cacheable(value = CacheConstants.HOTEL_CACHE_NAME)
     public Set<HotelResponse> readLessPrice(BigDecimal price) {
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return mapper.toSetResponse(repository.findByPriceLessThan(price));
     }
 
     @Override
+    @Cacheable(value = CacheConstants.HOTEL_CACHE_NAME)
     public Set<HotelResponse> readBetweenPrices(BigDecimal min, BigDecimal max) {
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return mapper.toSetResponse(repository.findByPriceBetween(min, max));
     }
 
-
     @Override
+    @Cacheable(value = CacheConstants.HOTEL_CACHE_NAME)
     public Set<HotelResponse> readByRating(Integer rating) {
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return mapper.toSetResponse(repository.findByRating(rating));
     }
 }

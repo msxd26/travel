@@ -1,5 +1,6 @@
 package pe.jsaire.springtravel.models.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -46,15 +47,21 @@ public class CustomerEntity {
     private String phoneNumber;
 
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL,
+            mappedBy = "customer",
+            fetch = FetchType.LAZY)
     private Set<TicketEntity> tickets;
 
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL,
+            mappedBy = "customer",
+            fetch = FetchType.LAZY)
     private Set<ReservationEntity> reservations;
 
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL,
+            mappedBy = "customer",
+            fetch = FetchType.LAZY)
     private Set<TourEntity> tours;
 
 }

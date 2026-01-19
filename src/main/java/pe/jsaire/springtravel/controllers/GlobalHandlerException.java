@@ -8,14 +8,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import pe.jsaire.springtravel.models.dto.response.ErrorResponse;
 import pe.jsaire.springtravel.utils.exceptions.ResourceNotFoundException;
+import pe.jsaire.springtravel.utils.exceptions.UserNotFoundException;
 
 
 @RestControllerAdvice
 public class GlobalHandlerException {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
+
+    @ExceptionHandler({ResourceNotFoundException.class, UserNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException ex) {
+    public ErrorResponse handleResourceNotFoundException(RuntimeException ex) {
         return ErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND.name())
                 .code(HttpStatus.NOT_FOUND.value())
@@ -36,7 +38,5 @@ public class GlobalHandlerException {
                 .status(exception.getStatusCode().toString())
                 .details(results)
                 .build();
-
-
     }
 }

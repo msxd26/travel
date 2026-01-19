@@ -28,4 +28,5 @@ public class CustomerRequest implements Serializable {
     @NotBlank
     @Size(max = 20)
     private String phoneNumber;
+
 }
