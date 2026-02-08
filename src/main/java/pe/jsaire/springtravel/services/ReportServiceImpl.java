@@ -32,7 +32,9 @@ public class ReportServiceImpl implements IReportService {
     private static final String REPORTS_PATH_WITH_NAME = "reports/Sales-%s";
     private static final String REPORTS_PATH = "reports";
     private static final String FILE_TYPE = ".xlsx";
-    private static final String FILE_NAME = "Sales-%s.xlsx";*/
+    private static final String FILE_NAME = "Sales-%s.xlsx";
+
+    */
 
     private static final String SHEET_NAME = "Customer total sales";
     private static final String FONT_TYPE = "Arial";

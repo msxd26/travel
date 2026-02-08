@@ -27,7 +27,7 @@ public class GlobalHandlerException {
 
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handlerException(MethodArgumentNotValidException exception) {
         var results = exception.getBindingResult()
                 .getFieldErrors()
@@ -37,6 +37,17 @@ public class GlobalHandlerException {
         return ErrorResponse.builder()
                 .status(exception.getStatusCode().toString())
                 .details(results)
+                .build();
+    }
+
+
+    @ExceptionHandler(InternalServerErrorException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handlerException(InternalServerErrorException exception) {
+        return ErrorResponse.builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.name())
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message(exception.getMessage())
                 .build();
     }
 }

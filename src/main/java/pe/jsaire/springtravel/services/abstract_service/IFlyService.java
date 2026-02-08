@@ -4,7 +4,7 @@ import pe.jsaire.springtravel.models.dto.response.FlyResponse;
 
 import java.util.Set;
 
-public interface IFlyService extends ICatalgoService<FlyResponse> {
+public interface IFlyService extends ICatalogService<FlyResponse> {
 
     Set<FlyResponse> readByOriginDistination(String origin, String destination);
 

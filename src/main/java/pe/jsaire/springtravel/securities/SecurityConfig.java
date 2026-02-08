@@ -46,7 +46,6 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
 
-    // Inyección de propiedades
     @Value("${app.client.id}")
     private String clientId;
 

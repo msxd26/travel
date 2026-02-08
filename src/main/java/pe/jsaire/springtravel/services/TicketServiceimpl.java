@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class TicketServiceimpl implements ITicketService {
+public class TicketServiceImpl implements ITicketService {
 
     private final TicketRepository repository;
     private final TicketMapper mapper;

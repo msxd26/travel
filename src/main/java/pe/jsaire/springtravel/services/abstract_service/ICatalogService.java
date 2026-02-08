@@ -7,7 +7,7 @@ import pe.jsaire.springtravel.utils.enums.SortType;
 import java.math.BigDecimal;
 import java.util.Set;
 
-public interface ICatalgoService<RS> {
+public interface ICatalogService<RS> {
 
 
     String FIELD_BY_SORT = "price";

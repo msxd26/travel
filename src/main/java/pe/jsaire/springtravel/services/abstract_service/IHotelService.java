@@ -4,6 +4,6 @@ import pe.jsaire.springtravel.models.dto.response.HotelResponse;
 
 import java.util.Set;
 
-public interface IHotelService extends ICatalgoService<HotelResponse> {
+public interface IHotelService extends ICatalogService<HotelResponse> {
     Set<HotelResponse> readByRating(Integer rating);
 }

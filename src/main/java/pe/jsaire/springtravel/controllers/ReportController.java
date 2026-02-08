@@ -18,7 +18,7 @@ public class ReportController {
 
     private final IReportService reportService;
 
-    private final MediaType FORCE_DOWNLOAD = new MediaType("aplication", "force-download");
+    private final MediaType FORCE_DOWNLOAD = new MediaType("application", "force-download");
     private final String FORCE_DOWNLOAD_HEADER = "attachment; filename=report.xlsx";
 
     @GetMapping
