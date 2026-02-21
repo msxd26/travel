@@ -73,17 +73,24 @@ Endpoints principales:
 | Usuarios   | `/user`     | Rol admin              |
 | Reportes   | `/report`   | Rol admin              |
 
-- **Swagger UI:** `http://localhost:8080/spring-travel/swagger-ui.html`
-- **OpenAPI JSON:** `http://localhost:8080/spring-travel/v3/api-docs`
+### Swagger / OpenAPI (sin login)
 
-## Seguridad (OAuth2)
+La documentación está bajo el prefijo `/api/v1` y está configurada como recurso público en `SecurityConfig`, así que se puede abrir sin autenticación:
 
-La API usa OAuth2 con servidor de autorización embebido y JWT. La configuración del cliente está en `configs/client_security.properties`. Para acceder a recursos protegidos:
+- **Swagger UI:** `http://localhost:8080/spring-travel/api/v1/swagger-ui.html`  
+  o `http://localhost:8080/spring-travel/api/v1/swagger-ui/index.html`
+- **OpenAPI JSON:** `http://localhost:8080/spring-travel/api/v1/v3/api-docs`
 
-1. Obtener token (Authorization Code o Client Credentials) contra el authorization server.
-2. Enviar el JWT en el header: `Authorization: Bearer <token>`.
+## Seguridad (OAuth2 y form login)
 
-Los recursos `/fly/**` y `/hotel/**` son públicos; el resto requiere autenticación o rol según la configuración en `SecurityConfig`.
+- **Login (formulario):** `http://localhost:8080/spring-travel/login`  
+  Usuarios y contraseñas se gestionan en MongoDB (colección `app_users`), cargados desde `sql/mongo/init-mongo.js`.
+
+- **OAuth2:** La API usa servidor de autorización embebido y JWT. Configuración del cliente en `configs/client_security.properties`. Para recursos protegidos vía API:
+  1. Obtener token (Authorization Code o Client Credentials) contra el authorization server.
+  2. Enviar el JWT en el header: `Authorization: Bearer <token>`.
+
+**Recursos públicos (sin autenticación):** `/fly/**`, `/hotel/**`, Swagger UI y OpenAPI (`/api/v1/swagger-ui/**`, `/api/v1/v3/api-docs/**`). El resto requiere autenticación o rol según `SecurityConfig`.
 
 ## Estructura del proyecto
 

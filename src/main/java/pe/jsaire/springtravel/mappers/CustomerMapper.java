@@ -9,6 +9,7 @@ import pe.jsaire.springtravel.models.entity.CustomerEntity;
 @Mapper(componentModel = "spring")
 public interface CustomerMapper {
 
+
     CustomerEntity toResponse(CustomerRequest request);
 
     CustomerResponse toEntity(CustomerEntity entity);

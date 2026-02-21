@@ -1,11 +1,13 @@
 package pe.jsaire.springtravel.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import pe.jsaire.springtravel.models.dto.response.ErrorResponse;
 import pe.jsaire.springtravel.utils.exceptions.ResourceNotFoundException;
 import pe.jsaire.springtravel.utils.exceptions.UserNotFoundException;
@@ -41,13 +43,13 @@ public class GlobalHandlerException {
     }
 
 
-    @ExceptionHandler(InternalServerErrorException.class)
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handlerException(InternalServerErrorException exception) {
+    public ErrorResponse handleAllExceptions(Exception ex, HttpServletRequest request) {
         return ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.name())
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message(exception.getMessage())
+                .message("Error interno del servidor")
                 .build();
     }
 }

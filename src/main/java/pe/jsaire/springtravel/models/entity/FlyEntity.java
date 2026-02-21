@@ -32,6 +32,7 @@ public class FlyEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "origin_lat", nullable = false)

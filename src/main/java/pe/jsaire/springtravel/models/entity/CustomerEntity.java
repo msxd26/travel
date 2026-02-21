@@ -26,6 +26,7 @@ public class CustomerEntity {
 
     @Id
     @Column(length = 20)
+    @EqualsAndHashCode.Include
     private String dni;
 
     @Column(name = "full_name", length = 50, nullable = false)

@@ -44,142 +44,148 @@ import java.util.UUID;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
+  private final UserDetailsService userDetailsService;
 
-    @Value("${app.client.id}")
-    private String clientId;
+  @Value("${app.client.id}")
+  private String clientId;
 
-    @Value("${app.client.secret}")
-    private String clientSecret;
+  @Value("${app.client.secret}")
+  private String clientSecret;
 
-    @Value("${app.client-scope-read}")
-    private String scopeRead;
+  @Value("${app.client-scope-read}")
+  private String scopeRead;
 
-    @Value("${app.client-scope-write}")
-    private String scopeWrite;
+  @Value("${app.client-scope-write}")
+  private String scopeWrite;
 
-    @Value("${app.client-redirect-debugger}")
-    private String redirectUri1;
+  @Value("${app.client-redirect-debugger}")
+  private String redirectUri1;
 
-    @Value("${app.client-redirect-spring-doc}")
-    private String redirectUri2;
+  @Value("${app.client-redirect-spring-doc}")
+  private String redirectUri2;
 
-    private static final String[] PUBLIC_RESOURCES = {"/fly/**", "/hotel/**", "/swagger-ui/**", "/.well-known/**", "/v3/api-docs/**"};
-    private static final String[] USER_RESOURCES = {"/tour/**", "/ticket/**", "/reservation/**"};
-    private static final String[] ADMIN_RESOURCES = {"/user/**", "/report/**"};
-    private static final String LOGIN_RESOURCE = "/login";
-    private static final String ROLE_ADMIN = "write";
+  private static final String[] PUBLIC_RESOURCES = {
+      "/fly/**", "/hotel/**",
+      "/swagger-ui/**", "/swagger-ui.html",
+      "/api/v1/swagger-ui/**", "/api/v1/swagger-ui.html",
+      "/v3/api-docs/**", "/api/v1/v3/api-docs/**",
+      "/.well-known/**"
+  };
+  private static final String[] USER_RESOURCES = { "/tour/**", "/ticket/**", "/reservation/**" };
+  private static final String[] ADMIN_RESOURCES = { "/user/**", "/report/**" };
+  private static final String LOGIN_RESOURCE = "/login";
+  private static final String ROLE_ADMIN = "write";
 
-    @Bean
-    public static BCryptPasswordEncoder getBCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
+  @Bean
+  public static BCryptPasswordEncoder getBCryptPasswordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  @Order(1)
+  public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
+    authorizationServerConfigurer.oidc(Customizer.withDefaults());
+    http
+        .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
+        .with(authorizationServerConfigurer, Customizer.withDefaults())
+        .cors(Customizer.withDefaults());
+    http.exceptionHandling((exceptions) -> exceptions
+        .defaultAuthenticationEntryPointFor(
+            new LoginUrlAuthenticationEntryPoint(LOGIN_RESOURCE),
+            new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
+
+    return http.build();
+  }
+
+  @Bean
+  @Order(2)
+  public SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
+    return http
+        .authorizeHttpRequests(authorize -> authorize
+            .requestMatchers(PUBLIC_RESOURCES).permitAll()
+            .requestMatchers(USER_RESOURCES).authenticated()
+            .requestMatchers(ADMIN_RESOURCES).hasAuthority(ROLE_ADMIN)
+            .anyRequest().authenticated())
+        .cors(Customizer.withDefaults())
+        .formLogin(Customizer.withDefaults())
+        .oauth2ResourceServer(oauth2 -> oauth2
+            .jwt(Customizer.withDefaults()))
+        .build();
+  }
+
+  @Bean
+  public AuthenticationProvider authenticationProvider(BCryptPasswordEncoder encoder) {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+    provider.setPasswordEncoder(encoder);
+    return provider;
+  }
+
+  @Bean
+  public TokenSettings tokenSettings() {
+    return TokenSettings.builder()
+        .refreshTokenTimeToLive(Duration.ofHours(8))
+        .build();
+  }
+
+  @Bean
+  public RegisteredClientRepository registeredClientRepository(BCryptPasswordEncoder encoder,
+      TokenSettings tokenSettings) {
+    var registerClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        .clientId(clientId)
+        .clientSecret(encoder.encode(clientSecret))
+        .scope(scopeRead)
+        .scope(scopeWrite)
+        .redirectUri(redirectUri1)
+        .redirectUri(redirectUri2)
+        .redirectUri("http://localhost:4200/login/callback")
+        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+        .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+        .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+        .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+        .tokenSettings(tokenSettings)
+        .build();
+
+    return new InMemoryRegisteredClientRepository(registerClient);
+  }
+
+  @Bean
+  public AuthorizationServerSettings authorizationServerSettings() {
+    return AuthorizationServerSettings.builder().build();
+  }
+
+  @Bean
+  public JWKSource<SecurityContext> jwksSource() {
+    var rsaKey = generateRSAKey();
+    var jwkSet = new JWKSet(rsaKey);
+    return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+  }
+
+  @Bean
+  public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwksSource) {
+    return NimbusJwtDecoder.withJwkSource(jwksSource).build();
+  }
+
+  private static RSAKey generateRSAKey() {
+    var key = generateRSA();
+    RSAPublicKey publicKey = (RSAPublicKey) key.getPublic();
+    RSAPrivateKey privateKey = (RSAPrivateKey) key.getPrivate();
+
+    return new RSAKey.Builder(publicKey)
+        .privateKey(privateKey)
+        .keyID(UUID.randomUUID().toString())
+        .build();
+  }
+
+  private static KeyPair generateRSA() {
+    KeyPair keyPair;
+    try {
+      KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+      keyPairGenerator.initialize(2048);
+      keyPair = keyPairGenerator.generateKeyPair();
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
     }
-
-    @Bean
-    @Order(1)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                new OAuth2AuthorizationServerConfigurer();
-        authorizationServerConfigurer.oidc(Customizer.withDefaults());
-        http
-                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-                .with(authorizationServerConfigurer, Customizer.withDefaults());
-        http.exceptionHandling((exceptions) -> exceptions
-                .defaultAuthenticationEntryPointFor(
-                        new LoginUrlAuthenticationEntryPoint(LOGIN_RESOURCE),
-                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
-                )
-        );
-
-        return http.build();
-    }
-
-    @Bean
-    @Order(2)
-    public SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(PUBLIC_RESOURCES).permitAll()
-                        .requestMatchers(USER_RESOURCES).authenticated()
-                        .requestMatchers(ADMIN_RESOURCES).hasAuthority(ROLE_ADMIN)
-                        .anyRequest().authenticated()
-                )
-                .formLogin(Customizer.withDefaults())
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults())
-                ).build();
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider(BCryptPasswordEncoder encoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-        provider.setPasswordEncoder(encoder);
-        return provider;
-    }
-
-    @Bean
-    public TokenSettings tokenSettings() {
-        return TokenSettings.builder()
-                .refreshTokenTimeToLive(Duration.ofHours(8))
-                .build();
-    }
-
-    @Bean
-    public RegisteredClientRepository registeredClientRepository(BCryptPasswordEncoder encoder, TokenSettings tokenSettings) {
-        var registerClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId(clientId)
-                .clientSecret(encoder.encode(clientSecret))
-                .scope(scopeRead)
-                .scope(scopeWrite)
-                .redirectUri(redirectUri1)
-                .redirectUri(redirectUri2)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .tokenSettings(tokenSettings)
-                .build();
-
-        return new InMemoryRegisteredClientRepository(registerClient);
-    }
-
-    @Bean
-    public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder().build();
-    }
-
-    @Bean
-    public JWKSource<SecurityContext> jwksSource() {
-        var rsaKey = generateRSAKey();
-        var jwkSet = new JWKSet(rsaKey);
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwksSource) {
-        return NimbusJwtDecoder.withJwkSource(jwksSource).build();
-    }
-
-    private static RSAKey generateRSAKey() {
-        var key = generateRSA();
-        RSAPublicKey publicKey = (RSAPublicKey) key.getPublic();
-        RSAPrivateKey privateKey = (RSAPrivateKey) key.getPrivate();
-
-        return new RSAKey.Builder(publicKey)
-                .privateKey(privateKey)
-                .keyID(UUID.randomUUID().toString())
-                .build();
-    }
-
-    private static KeyPair generateRSA() {
-        KeyPair keyPair;
-        try {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            keyPair = keyPairGenerator.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
-        return keyPair;
-    }
+    return keyPair;
+  }
 }
